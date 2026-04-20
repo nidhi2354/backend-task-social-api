@@ -23,6 +23,7 @@ model User {
   posts    Post[]
   likes    Like[]
   comments Comment[]
+  polls Poll[]
 }
 
 model Post {
@@ -56,4 +57,33 @@ model Comment {
 
   user   User @relation(fields: [userId], references: [id])
   post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+
+
+
+
+
+
+model Poll {
+  id         String          @id @default(uuid())
+  question   String
+  status     PollStatus      @default(ACTIVE)
+  visibility PollVisibility  @default(PUBLIC)
+
+  userId     String
+  user       User            @relation(fields: [userId], references: [id])
+
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+enum PollStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum PollVisibility {
+  PUBLIC
+  PRIVATE
 }
