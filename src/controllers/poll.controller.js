@@ -4,7 +4,8 @@ const prisma = new PrismaClient();
 //create a poll
 const createPoll = async (req, res) => {
   try {
-    const { question, userId } = req.body;
+    const { question } = req.body;
+    const userId = req.user.id;
 
     const poll = await prisma.poll.create({
       data: {
@@ -13,9 +14,14 @@ const createPoll = async (req, res) => {
       },
     });
 
-    res.status(201).json(poll);
+    res.status(201).json({
+      message: "poll created successfully",
+      poll,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      message: "Internal server error ",
+    });
   }
 };
 
@@ -26,45 +32,66 @@ const updatePoll = async (req, res) => {
     const { question, status, visibility } = req.body;
 
     const updatedPoll = await prisma.poll.update({
-      where: { id: pollId },
+      where: {
+        id: pollId,
+        userId: userId,
+      },
       data: {
         question,
         status,
         visibility,
       },
     });
-    res.json(updatedPoll);
+    res.status(200).json({
+      message: "updated successfully poll",
+      updatedPoll,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 
 // Get Polls by User
 const getUserPolls = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
     const polls = await prisma.poll.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
 
-    res.json(polls);
+    res.status(200).json({
+      message: "successfully getUserPolls",
+      polls,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
+
 //Delete Poll
 const deletePoll = async (req, res) => {
   try {
     const { pollId } = req.params;
 
     await prisma.poll.delete({
-      where: { id: pollId },
+      where: {
+        id: pollId,
+        userId: userId,
+      },
     });
 
-    res.json({ message: "Poll deleted successfully" });
+    res.status(200).json({
+      message: "successfully deleted poll",
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 

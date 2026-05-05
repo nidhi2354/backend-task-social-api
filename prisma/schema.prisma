@@ -1,89 +1,99 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" 
   url      = env("DATABASE_URL")
 }
 
+model User { 
+  id       String   @id @default(uuid()) 
+  username String   @unique 
+  email    String   @unique 
+  password String  
 
-
-model User {
-  id       String @id @default(uuid())
-  username String @unique
-  email    String @unique
-  password String
-
-  posts    Post[]
-  likes    Like[]
+  posts    Post[] 
+  likes    Like[] 
   comments Comment[]
-  polls Poll[]
+  polls    Poll[] 
 }
 
-model Post {
-  id        String   @id @default(uuid())
-  content   String
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Post { 
+  id         String   @id @default(uuid()) 
+  content    String
+  authorId   String 
+  createdAt  DateTime @default(now()) 
+  updatedAt  DateTime @updatedAt 
 
-  author    User     @relation(fields: [authorId], references: [id])
-  likes     Like[]
-  comments  Comment[]
-}
+  author     User     @relation(fields: [authorId], references: [id])
 
-model Like {
-  id     String @id @default(uuid())
-  userId String
-  postId String
+  likes      Like[] 
+  comments   Comment[]
 
-  user   User @relation(fields: [userId], references: [id])
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  categoryId String? 
+  category   Category? @relation(fields: [categoryId], references: [id])
+}  
 
-  @@unique([userId, postId])
+model Like { 
+  id     String @id @default(uuid()) 
+  userId String 
+  postId String 
+
+  user   User @relation(fields: [userId], references: [id]) 
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade) 
+
+  @@unique([userId, postId]) 
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  content   String
-  userId    String
-  postId    String
+  id      String @id @default(uuid()) 
+  content String 
+  userId  String 
+  postId  String 
 
-  user   User @relation(fields: [userId], references: [id])
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user    User @relation(fields: [userId], references: [id]) 
+  post    Post @relation(fields: [postId], references: [id], onDelete: Cascade) 
 }
 
-
-
-
-
-
-
 model Poll {
-  id         String          @id @default(uuid())
-  question   String
-  status     PollStatus      @default(ACTIVE)
-  visibility PollVisibility  @default(PUBLIC)
+  id         String   @id @default(uuid()) 
+  question   String 
+  status     PollStatus @default(ACTIVE) 
+  visibility PollVisibility @default(PUBLIC)
 
-  userId     String
-  user       User            @relation(fields: [userId], references: [id])
+  userId     String 
+  user       User @relation(fields: [userId], references: [id]) 
 
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
+  createdAt  DateTime @default(now()) 
+  updatedAt  DateTime @updatedAt 
 }
 
 enum PollStatus {
-  ACTIVE
+  ACTIVE 
   CLOSED
 }
 
 enum PollVisibility {
-  PUBLIC
+  PUBLIC 
   PRIVATE
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  url       String
+
+  parentId  String?  
+
+  parent    Category? @relation("CatRelation", fields: [parentId], references: [id])
+  children  Category[] @relation("CatRelation")
+
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts     Post[]
 }
